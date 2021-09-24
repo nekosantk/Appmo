@@ -5,15 +5,17 @@ import {
   GoogleSignin,
   GoogleSigninButton,
 } from '@react-native-google-signin/google-signin';
-import { REACT_APP_FIREBASE_GOOGLE_KEY } from '@env'
+import {
+  REACT_APP_FIREBASE_GOOGLE_KEY,
+  REACT_APP_BACKEND_BASEURL,
+  REACT_APP_BACKEND_AUTH,
+} from '@env';
 
 const LoginScreen = () => {
   const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState();
 
   GoogleSignin.configure({
-    webClientId:
-    REACT_APP_FIREBASE_GOOGLE_KEY,
+    webClientId: REACT_APP_FIREBASE_GOOGLE_KEY,
   });
 
   async function SignInGoogle() {
@@ -27,8 +29,15 @@ const LoginScreen = () => {
     return auth().signInWithCredential(googleCredential);
   }
 
+  async function SignInGoogleBackend() {
+    let response = await fetch(
+      REACT_APP_BACKEND_BASEURL + REACT_APP_BACKEND_AUTH);
+    console.log('Reponse: ' + response.ok);
+  }
+
+  console.log("BaseURL: " + REACT_APP_BACKEND_BASEURL + REACT_APP_BACKEND_AUTH)
+
   function onAuthStateChanged(user) {
-    setUser(user);
     if (initializing) {
       setInitializing(false);
     }
@@ -40,18 +49,24 @@ const LoginScreen = () => {
   }, []);
 
   return (
-    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}> 
-    <Text>Weclome</Text>      
+    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+      <Text>Weclome</Text>
       <GoogleSigninButton
         style={{width: 192, height: 48}}
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
-        onPress={SignInGoogle}
+        onPress={() => {
+          SignInGoogle().then((value) => {
+            SignInGoogleBackend();
+          });
+        }}
         disabled={initializing}
       />
     </View>
   );
 };
+
+/* onPress={() => SignInGoogle().then(() => SignInGoogleBackend() )} */
 
 export default LoginScreen;
 
