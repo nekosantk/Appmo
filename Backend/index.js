@@ -1,13 +1,23 @@
-require('dotenv').config({path: __dirname + '/.env'})
+require("dotenv").config({ path: __dirname + "/.env" });
 
-const express = require('express');
-
+const express = require("express");
 const app = express();
 
+var bodyParser = require('body-parser')
+app.use( bodyParser.json() );
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 
-app.get('/auth', (req, res) => {
-    res.send("Hello from server");
-    console.log("auth")
+var admin = require("firebase-admin");
+admin.initializeApp({
+  credential: admin.credential.cert("./serviceAccountKey.json"),
 });
 
-app.listen(5000, () => console.log('listening on: 5000'));
+app.post("/auth", (req, res) => {
+  const idToken = req.body.idToken;
+  res.send("Hello from server");
+  console.log("Auth endpoint hit: " + idToken);
+});
+
+app.listen(5000, () => console.log("listening on: 5000"));

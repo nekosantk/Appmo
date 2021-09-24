@@ -77,3 +77,4 @@ typings/
 
 # Firebase
 google-services.json
+ServiceAccountKey.json
