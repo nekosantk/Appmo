@@ -1,2 +1,2 @@
 # Appmo
-Appmo P2P + Realtime Chat Mobile App
+ Appmo P2P + Chat App
