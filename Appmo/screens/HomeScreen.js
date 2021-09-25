@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, Button, View} from 'react-native';
 import auth from '@react-native-firebase/auth';
+import {REACT_APP_BACKEND_AUTH, REACT_APP_BACKEND_BASEURL} from '@env';
 
 const HomeScreen = () => {
   async function SignOutGoogle() {
@@ -9,10 +10,7 @@ const HomeScreen = () => {
 
   return (
     <View>
-      <Button
-        onPress={SignOutGoogle}
-        title="Sign Out"
-      />
+      <Button onPress={SignOutGoogle} title="Sign Out" />
     </View>
   );
 };

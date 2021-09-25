@@ -29,11 +29,18 @@ const LoginScreen = () => {
     return auth().signInWithCredential(googleCredential);
   }
 
-  async function SignInGoogleBackend() {
-    auth()
+  async function SignIntoBackend() {
+    const idToken = await auth()
       .currentUser.getIdToken(/* forceRefresh */ true)
       .then(function (idToken) {
-        var response = fetch(
+        return idToken;
+      })
+      .catch(error => {
+        console.log(error);
+        return null;
+      });
+      if (idToken != null) {
+        const response = await fetch(
           REACT_APP_BACKEND_BASEURL + REACT_APP_BACKEND_AUTH,
           {
             method: 'POST',
@@ -44,14 +51,11 @@ const LoginScreen = () => {
             body: JSON.stringify({
               idToken: idToken,
             }),
-          }
-        )
-        console.log('Reponse: ' + response.ok);
-      })
-      .catch(function (error) { console.log(error); });
+          },
+        );
+        console.log(response.ok);
+      }
   }
-
-  console.log('BaseURL: ' + REACT_APP_BACKEND_BASEURL + REACT_APP_BACKEND_AUTH);
 
   function onAuthStateChanged(user) {
     if (initializing) {
@@ -72,8 +76,8 @@ const LoginScreen = () => {
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
         onPress={() => {
-          SignInGoogle().then(value => {
-            SignInGoogleBackend();
+          SignInGoogle().then(() => {
+            SignIntoBackend();
           });
         }}
         disabled={initializing}
@@ -81,8 +85,6 @@ const LoginScreen = () => {
     </View>
   );
 };
-
-/* onPress={() => SignInGoogle().then(() => SignInGoogleBackend() )} */
 
 export default LoginScreen;
 
