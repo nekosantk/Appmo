@@ -29,33 +29,33 @@ const LoginScreen = () => {
     return auth().signInWithCredential(googleCredential);
   }
 
-  async function SignIntoBackend() {
-    const idToken = await auth()
-      .currentUser.getIdToken(/* forceRefresh */ true)
-      .then(function (idToken) {
-        return idToken;
-      })
-      .catch(error => {
-        console.log(error);
-        return null;
-      });
-      if (idToken != null) {
-        const response = await fetch(
-          REACT_APP_BACKEND_BASEURL + REACT_APP_BACKEND_AUTH,
-          {
-            method: 'POST',
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              idToken: idToken,
-            }),
-          },
-        );
-        console.log(response.ok);
-      }
-  }
+  // async function SignIntoBackend() {
+  //   const idToken = await auth()
+  //     .currentUser.getIdToken(/* forceRefresh */ true)
+  //     .then(function (idToken) {
+  //       return idToken;
+  //     })
+  //     .catch(error => {
+  //       console.log(error);
+  //       return null;
+  //     });
+  //     if (idToken != null) {
+  //       const response = await fetch(
+  //         REACT_APP_BACKEND_BASEURL + REACT_APP_BACKEND_AUTH,
+  //         {
+  //           method: 'POST',
+  //           headers: {
+  //             Accept: 'application/json',
+  //             'Content-Type': 'application/json',
+  //           },
+  //           body: JSON.stringify({
+  //             idToken: idToken,
+  //           }),
+  //         },
+  //       );
+  //       console.log(response.ok);
+  //     }
+  // }
 
   function onAuthStateChanged(user) {
     if (initializing) {
@@ -76,9 +76,7 @@ const LoginScreen = () => {
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
         onPress={() => {
-          SignInGoogle().then(() => {
-            SignIntoBackend();
-          });
+          SignInGoogle();
         }}
         disabled={initializing}
       />
