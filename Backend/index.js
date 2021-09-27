@@ -37,6 +37,10 @@ websocket.on("connection", (socket) => {
     connectCounter--;
     console.log("User disconnect: counter: " + connectCounter);
   });
+
+  socket.on("message", (message) => {
+    console.log("New message: " + message);
+  });
 });
 
 // app.post("/auth", (req, res) => {
