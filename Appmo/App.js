@@ -3,6 +3,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
+import NewChatScreen from './screens/NewChatScreen';
 import auth from '@react-native-firebase/auth';
 
 export default App = () => {
@@ -29,6 +30,7 @@ export default App = () => {
         {isSignedIn ? (
           <>
             <Stack.Screen name="Home" component={HomeScreen} options={HeaderOptions.HomeOptions} />
+            <Stack.Screen name="NewChat" component={NewChatScreen} options={HeaderOptions.NewChatOptions} />
           </>
         ) : (
           <>
@@ -46,5 +48,9 @@ const HeaderOptions = {
   },
   HomeOptions: {
     headerShown: false
-  }
+  },
+  NewChatOptions: {
+    title: 'Select Contact',
+    headerTitleAlign: 'center'
+  },
 };

@@ -4,10 +4,9 @@ import auth from '@react-native-firebase/auth';
 import SocketService from '../SocketService';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
   const NewChatButton = () => {
-    console.log('You have been clicked a button!');
-    // do something
+    navigation.navigate("NewChat");
   };
 
   async function SignOutGoogle() {
