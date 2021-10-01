@@ -181,6 +181,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-contacts')
     implementation platform('com.google.firebase:firebase-bom:28.4.1')
     implementation fileTree(dir: "libs", include: ["*.jar"])
     //noinspection GradleDynamicVersion

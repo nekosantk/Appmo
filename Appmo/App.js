@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import auth from '@react-native-firebase/auth';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
-import NewChatScreen from './screens/NewChatScreen';
-import auth from '@react-native-firebase/auth';
+import ContactsScreen from './screens/ContactsScreen';
 
 export default App = () => {
 
@@ -30,7 +30,7 @@ export default App = () => {
         {isSignedIn ? (
           <>
             <Stack.Screen name="Home" component={HomeScreen} options={HeaderOptions.HomeOptions} />
-            <Stack.Screen name="NewChat" component={NewChatScreen} options={HeaderOptions.NewChatOptions} />
+            <Stack.Screen name="Contacts" component={ContactsScreen} options={HeaderOptions.ContactsOptions} />
           </>
         ) : (
           <>
@@ -49,8 +49,8 @@ const HeaderOptions = {
   HomeOptions: {
     headerShown: false
   },
-  NewChatOptions: {
-    title: 'Select Contact',
+  ContactsOptions: {
+    title: 'New Chat',
     headerTitleAlign: 'center'
   },
 };

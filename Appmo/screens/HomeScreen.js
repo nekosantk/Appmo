@@ -5,8 +5,8 @@ import SocketService from '../SocketService';
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const HomeScreen = ({ navigation }) => {
-  const NewChatButton = () => {
-    navigation.navigate("NewChat");
+  const ContactsButton = () => {
+    navigation.navigate("Contacts");
   };
 
   async function SignOutGoogle() {
@@ -23,8 +23,8 @@ const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.Screen}>
       <TouchableOpacity
-        onPress={NewChatButton}
-        style={styles.NewChatButton}>
+        onPress={ContactsButton}
+        style={styles.ContactsButton}>
         <MaterialCommunityIcons name="chat-plus-outline" size={24} color="black" />
       </TouchableOpacity>
     </View>
@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   Screen: {
     flex: 1,
   },
-  NewChatButton: {
+  ContactsButton: {
     height: 60,
     width: 60,
     borderRadius: 100,

@@ -16,7 +16,7 @@ const ContactPanel = ({ id, displayName, avatarUrl, statusMessage }) => {
                     {displayName}
                 </ListItem.Title>
                 <ListItem.Subtitle>
-                    {statusMessage}
+                    {statusMessage?.[0]?.email}
                 </ListItem.Subtitle>
             </ListItem.Content>
         </ListItem>
