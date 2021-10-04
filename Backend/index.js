@@ -41,6 +41,11 @@ websocket.on("connection", (socket) => {
   socket.on("message", (message) => {
     console.log("New message: " + message);
   });
+
+  socket.on("getContactInfo", (message) => {
+    console.log('T: %j', message)
+    //console.log("Contact info was requsted: " + message);
+  })
 });
 
 // app.post("/auth", (req, res) => {

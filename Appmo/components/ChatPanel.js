@@ -2,10 +2,11 @@ import React from 'react';
 import {StyleSheet, TouchableOpacity} from 'react-native';
 import {Avatar, ListItem} from 'react-native-elements';
 
-const ContactPanel = ({navigation, chatName, avatarUrl, statusMessage, entityID}) => {
+const ChatPanel = ({navigation, entityID, chatName, avatarUrl, messages}) => {
   const EnterChat = () => {
     navigation.navigate('Chat', {entityID, chatName, avatarUrl});
   };
+  
   return (
     <TouchableOpacity key={entityID} onPress={EnterChat}>
       <ListItem>
@@ -20,14 +21,14 @@ const ContactPanel = ({navigation, chatName, avatarUrl, statusMessage, entityID}
           <ListItem.Title style={{fontWeight: '800'}}>
             {chatName}
           </ListItem.Title>
-          <ListItem.Subtitle>{statusMessage}</ListItem.Subtitle>
+          <ListItem.Subtitle>{messages[messages.length - 1].text}</ListItem.Subtitle>
         </ListItem.Content>
       </ListItem>
     </TouchableOpacity>
   );
 };
 
-export default ContactPanel;
+export default ChatPanel;
 
 const styles = StyleSheet.create({
   avatar: {

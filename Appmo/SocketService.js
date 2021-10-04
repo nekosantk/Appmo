@@ -21,10 +21,14 @@ export default class SocketService {
       }
     }
   }
-  static Send() {
+
+  static GetSocket() {
+    return socket;
+  }
+
+  static Send(command, payload) {
       if (socket != null) {
-        socket.emit("message", "hello from client");
-          console.log("Sent message");
+        socket.emit(command, payload);
       }
       else {
           console.log("socket is null");

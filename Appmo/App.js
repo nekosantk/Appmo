@@ -5,9 +5,9 @@ import auth from '@react-native-firebase/auth';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import ContactsScreen from './screens/ContactsScreen';
+import ChatScreen from './screens/ChatScreen';
 
 export default App = () => {
-
   const Stack = createNativeStackNavigator();
   const [isSignedIn, setSignedIn] = useState(false);
 
@@ -21,36 +21,56 @@ export default App = () => {
 
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    return subscriber; // unsubscribe on unmount
+    return function cleanup() {
+      subscriber;
+    };
   }, []);
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        {isSignedIn ? (
-          <>
-            <Stack.Screen name="Home" component={HomeScreen} options={HeaderOptions.HomeOptions} />
-            <Stack.Screen name="Contacts" component={ContactsScreen} options={HeaderOptions.ContactsOptions} />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="Login" component={LoginScreen} options={HeaderOptions.LoginOptions}/>
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+      <NavigationContainer>
+        <Stack.Navigator>
+          {isSignedIn ? (
+            <>
+              <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                options={HeaderOptions.HomeOptions}
+              />
+              <Stack.Screen
+                name="Contacts"
+                component={ContactsScreen}
+                options={HeaderOptions.ContactsOptions}
+              />
+              <Stack.Screen
+                name="Chat"
+                component={ChatScreen}
+                options={HeaderOptions.ChatScreen}
+              />
+            </>
+          ) : (
+            <>
+              <Stack.Screen
+                name="Login"
+                component={LoginScreen}
+                options={HeaderOptions.LoginOptions}
+              />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
   );
 };
 
 const HeaderOptions = {
   LoginOptions: {
-    headerShown: false
+    headerShown: false,
   },
   HomeOptions: {
-    headerShown: false
+    headerShown: false,
   },
   ContactsOptions: {
     title: 'New Chat',
-    headerTitleAlign: 'center'
+    headerTitleAlign: 'center',
   },
+  ChatScreen: {},
 };
