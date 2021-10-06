@@ -15,6 +15,7 @@ import ChatPanel from '../components/ChatPanel';
 import {useState} from '@hookstate/core';
 import Store from '../components/Store';
 import Contacts from 'react-native-contacts';
+import auth from '@react-native-firebase/auth';
 
 const HomeScreen = ({navigation}) => {
   const {chats, contactList} = useState(Store);
@@ -23,39 +24,28 @@ const HomeScreen = ({navigation}) => {
     var chatStack = chats.get();
     var contactStack = contactList.get();
 
-    // Sort chats by newest -> oldest
-    chatStack.sort((a, b) => {
-      if (
-        a.messages[a.messages.length - 1].timestamp <
-        b.messages[b.messages.length - 1].timestamp
-      )
-        return -1;
-      if (
-        a.messages[a.messages.length - 1].timestamp >
-        b.messages[b.messages.length - 1].timestamp
-      )
-        return 1;
-      return 0;
-    });
-
     // Get chat specific info
     var entityStack = chatStack.find(obj => {
-      return obj.entityID === newMessage.entityID;
+      return obj.entityID === newMessage.senderID;
     });
 
     // Get contact name
     var entityContact = contactStack.find(obj => {
-      return obj.emailAddress === newMessage.entityID;
+      return obj.emailAddress === newMessage.senderID;
     });
 
     // Set message variables
-    var entityID = newMessage.entityID;
+    var entityID = newMessage.senderID;
     var chatName = entityContact
       ? entityContact.displayName
       : 'NoName: ' + entityID; // Get from contact list TODO: store contactList in global state
     var avatarUrl =
       'https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg'; // Placeholder until we fetch real profile picture
-    var newMessage = newMessage.message;
+    var newMessage = {
+      text: newMessage.text,
+      timestamp: newMessage.timestamp,
+      senderID: newMessage.senderID,
+    };
 
     // This is a new chat, please create entity
     if (entityStack === undefined) {
@@ -83,6 +73,9 @@ const HomeScreen = ({navigation}) => {
   const SetupSocketEvents = () => {
     socket.on('contactData', data => {
       console.log('contactData: ' + data);
+    });
+    socket.on('message', data => {
+      HandleMessage(data);
     });
   };
 
@@ -123,48 +116,56 @@ const HomeScreen = ({navigation}) => {
   };
 
   useEffect(() => {
-    SocketService.InitSocket();
-    SetupSocketEvents();
-
-    if (Platform.OS === 'android') {
-      PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_CONTACTS, {
-        title: 'Contacts',
-        message: 'This app would like to view your contacts.',
-      }).then(() => {
-        RefreshContacts();
+    auth()
+      .currentUser.getIdToken()
+      .then(function (idToken) {
+        SocketService.InitSocket(idToken);
+        SetupSocketEvents();
+        if (Platform.OS === 'android') {
+          PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+            {
+              title: 'Contacts',
+              message: 'This app would like to view your contacts.',
+            },
+          ).then(() => {
+            RefreshContacts();
+          });
+        } else {
+          RefreshContacts();
+        }
       });
-    } else {
-      RefreshContacts();
-    }
     return () => {
       SocketService.CloseSocket();
     };
   }, []);
   return (
     <SafeAreaView style={styles.Screen}>
-      <Button
-        title="Add Message"
-        onPress={() =>
-          HandleMessage({
-            entityID: 'louw.mark@yahoo.com',
-            message: {
-              text: 'Hello there!',
-              timestamp: new Date().getTime(),
-              senderID: 'louw.mark@yahoo.com',
-            },
-          })
-        }></Button>
       <ScrollView>
-        {chats.get().map(({entityID, messages, avatarUrl, chatName}) => (
-          <ChatPanel
-            key={entityID}
-            entityID={entityID}
-            messages={messages}
-            avatarUrl={avatarUrl}
-            chatName={chatName}
-            navigation={navigation}
-          />
-        ))}
+        {[...chats.get()]
+          .sort((a, b) => {
+            if (
+              a.messages[a.messages.length - 1].timestamp >
+              b.messages[b.messages.length - 1].timestamp
+            )
+              return -1;
+            if (
+              a.messages[a.messages.length - 1].timestamp <
+              b.messages[b.messages.length - 1].timestamp
+            )
+              return 1;
+            return 0;
+          })
+          .map(({chatID, entityID, messages, avatarUrl, chatName}) => (
+            <ChatPanel
+              key={chatID}
+              entityID={entityID}
+              messages={messages}
+              avatarUrl={avatarUrl}
+              chatName={chatName}
+              navigation={navigation}
+            />
+          ))}
       </ScrollView>
       <View>
         <TouchableOpacity

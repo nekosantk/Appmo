@@ -3,10 +3,11 @@ import {REACT_APP_BACKEND_BASEURL} from '@env';
 
 export default class SocketService {
   static socket = null;
-  static InitSocket() {
+  static InitSocket(idToken) {
     socket = SocketIOClient(REACT_APP_BACKEND_BASEURL);
 
     socket.on('connect', () => {
+      socket.emit("auth", idToken);
       console.log('Connected');
     });
   }

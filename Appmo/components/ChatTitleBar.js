@@ -3,7 +3,7 @@ import {StyleSheet, TouchableOpacity, View, Text} from 'react-native';
 import {Avatar} from 'react-native-elements/dist/avatar/Avatar';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
-const ChatTitleBar = ({chatID, chatName, avatarUrl}) => {
+const ChatTitleBar = ({entityID, chatName, avatarUrl}) => {
   return (
     <View
       style={{

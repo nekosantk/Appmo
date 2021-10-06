@@ -21,7 +21,7 @@ const ChatPanel = ({navigation, entityID, chatName, avatarUrl, messages}) => {
           <ListItem.Title style={{fontWeight: '800'}}>
             {chatName}
           </ListItem.Title>
-          <ListItem.Subtitle>{messages[messages.length - 1].text}</ListItem.Subtitle>
+          <ListItem.Subtitle numberOfLines = { 1 }>{messages[messages.length - 1].text}</ListItem.Subtitle>
         </ListItem.Content>
       </ListItem>
     </TouchableOpacity>

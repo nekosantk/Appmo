@@ -27,40 +27,82 @@ server.listen(process.env.EXPRESS_PORT, () =>
 
 // App starts here
 
+var connectedClients = new Map();
+
 var connectCounter = 0;
 
 websocket.on("connection", (socket) => {
   connectCounter++;
   console.log("User connected: " + socket.id + " counter: " + connectCounter);
 
+  socket.on("auth", (message) => {
+    onAuth(socket, message);
+  });
+
   socket.on("disconnect", (socket) => {
-    connectCounter--;
-    console.log("User disconnect: counter: " + connectCounter);
+    onDisconnect(socket);
   });
 
   socket.on("message", (message) => {
-    console.log("New message: " + message);
+    onMessage(socket, message);
   });
 
   socket.on("getContactInfo", (message) => {
-    console.log('T: %j', message)
-    //console.log("Contact info was requsted: " + message);
-  })
+    onGetContactInfo(socket, message);
+  });
 });
 
-// app.post("/auth", (req, res) => {
-//   const idToken = req.body.idToken;
+function onAuth(socket, message) {
+  message = message.replace(/\"/g, "");
 
-//   admin
-//   .auth()
-//   .verifyIdToken(idToken)
-//   .then((decodedToken) => {
-//     const uid = decodedToken.uid;
-//     console.log(uid + " logged in.");
-//     res.sendStatus(200)
-//   })
-//   .catch((error) => {
-//     console.log(error);
-//     res.sendStatus(401);
-//   });
-// });
+  admin
+    .auth()
+    .verifyIdToken(message)
+    .then((decodedToken) => {
+      var email = decodedToken.email;
+      connectedClients.set(email, socket);
+      socket.email = email;
+      // TODO: Fetch pending user messages from database and mark as sent
+    });
+}
+
+function onDisconnect(socket) {
+  connectCounter--;
+  connectedClients.delete()
+  console.log("User disconnect: counter: " + connectCounter);
+}
+
+function onMessage(socket, message) {
+  var destinationID = message.destinationID;
+  var senderID = socket.email;
+  var messageObj = {
+      text: message.text,
+      timestamp: new Date().getTime(),
+      senderID: senderID,
+  };
+
+  /*
+  var entityID = message.entityID;
+  var text = message.message.text;
+  var messageObj = {
+    entityID: entityID,
+    message: {
+      text: text,
+      timestamp: new Date().getTime(),
+      senderID: entityID,
+    },
+  };*/
+
+  // Check if user is online
+  if (connectedClients.has(destinationID)) {
+    // Send to them directly
+    connectedClients.get(destinationID).emit("message", messageObj);
+  } else {
+    // Store in DB if offline
+  }
+}
+
+function onGetContactInfo(socket, message) {
+  //console.log("T: %j", message);
+  console.log("Contact info was requsted: " + message);
+}
