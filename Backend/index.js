@@ -16,14 +16,31 @@ app.use(
   })
 );
 
+app.use(express.static("public"));
+
 var admin = require("firebase-admin");
 admin.initializeApp({
   credential: admin.credential.cert("./serviceAccountKey.json"),
 });
 
 server.listen(process.env.EXPRESS_PORT, () =>
-  console.log("listening on: " + process.env.EXPRESS_PORT)
+  console.log("Listening on: " + process.env.EXPRESS_PORT)
 );
+
+const MongoClient = require('mongodb').MongoClient;
+const url = 'mongodb://127.0.0.1:27017';
+
+const dbName = 'Appmo'
+let db;
+
+MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
+  if (err) return console.log(err)
+
+  // Storing a reference to the database so you can use it later
+  db = client.db(dbName)
+  console.log(`Connected MongoDB: ${url}`)
+  console.log(`Database: ${dbName}`)
+})
 
 // App starts here
 
@@ -68,7 +85,7 @@ function onAuth(socket, message) {
 
 function onDisconnect(socket) {
   connectCounter--;
-  connectedClients.delete()
+  connectedClients.delete();
   console.log("User disconnect: counter: " + connectCounter);
 }
 
@@ -76,22 +93,10 @@ function onMessage(socket, message) {
   var destinationID = message.destinationID;
   var senderID = socket.email;
   var messageObj = {
-      text: message.text,
-      timestamp: new Date().getTime(),
-      senderID: senderID,
+    text: message.text,
+    timestamp: new Date().getTime(),
+    senderID: senderID,
   };
-
-  /*
-  var entityID = message.entityID;
-  var text = message.message.text;
-  var messageObj = {
-    entityID: entityID,
-    message: {
-      text: text,
-      timestamp: new Date().getTime(),
-      senderID: entityID,
-    },
-  };*/
 
   // Check if user is online
   if (connectedClients.has(destinationID)) {
@@ -103,6 +108,20 @@ function onMessage(socket, message) {
 }
 
 function onGetContactInfo(socket, message) {
-  //console.log("T: %j", message);
-  console.log("Contact info was requsted: " + message);
+  //console.log("Contact info was requsted: %j", message);
+
+  var emails = [];
+
+  for (let i = 0; i < message.length; i++) {
+    var email = message[i].emailAddress.replace(/\"/g, "");
+    emails.push(email,);
+  }
+  
+  GetUserInformation(emails, socket);
+}
+
+async function GetUserInformation(emails, socket)
+{
+  const result = await db.collection('UserInformation').find({ email: { $in: emails }}).toArray();
+  socket.emit("contactData", result);
 }

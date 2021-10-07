@@ -53,8 +53,7 @@ const ChatScreen = ({route, navigation}) => {
     var chatName = entityContact
       ? entityContact.displayName
       : 'NoName: ' + entityID; // Get from contact list TODO: store contactList in global state
-    var avatarUrl =
-      'https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg'; // Placeholder until we fetch real profile picture
+    var avatarUrl = route.params.avatarUrl;
     var newMessage = {
       text: input,
       timestamp: new Date().getTime(),
@@ -82,6 +81,8 @@ const ChatScreen = ({route, navigation}) => {
         messages: [...p.messages, newMessage],
       }));
     }
+
+    SocketService.Send('getContactInfo', [ {emailAddress: entityID} ]);
 
     setInput('');
   };

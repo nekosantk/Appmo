@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     height: 35,
     bottom: -6,
     borderBottomLeftRadius: 18,
-    right: -20,
+    right: -19.5,
   },
   leftArrow: {
     position: 'absolute',
@@ -85,6 +85,6 @@ const styles = StyleSheet.create({
     height: 35,
     bottom: -6,
     borderBottomRightRadius: 18,
-    left: -20,
+    left: -19.5,
   },
 });

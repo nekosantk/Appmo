@@ -16,6 +16,7 @@ import {useState} from '@hookstate/core';
 import Store from '../components/Store';
 import Contacts from 'react-native-contacts';
 import auth from '@react-native-firebase/auth';
+import {REACT_APP_BACKEND_BASEURL, REACT_APP_PROFILE_PICTURE_PATH} from '@env';
 
 const HomeScreen = ({navigation}) => {
   const {chats, contactList} = useState(Store);
@@ -70,9 +71,42 @@ const HomeScreen = ({navigation}) => {
     }
   };
 
+  const HandleContactData = data => {
+    var chatStack = chats.get();
+    var contactStack = contactList.get();
+
+    var arrayLength = data.length;
+    for (var i = 0; i < arrayLength; i++) {
+      // Get chat specific info
+      var entityStack = chatStack.find(obj => {
+        return obj.entityID === data[i].email;
+      });
+
+      // Get contact name
+      var entityContact = contactStack.find(obj => {
+        return obj.emailAddress === data[i].email;
+      });
+
+      // Set variables
+      var avatarUrl = REACT_APP_BACKEND_BASEURL + REACT_APP_PROFILE_PICTURE_PATH + data[i].profilePicture;
+
+      if (entityStack !== undefined && entityStack.avatarUrl !== data[i].profilePicture) {
+        chats[entityStack.chatID].merge(p => ({
+          avatarUrl: avatarUrl,
+        }));
+      }
+
+      if (entityContact !== undefined && chatStack.avatarUrl !== data[i].profilePicture) {
+        contactList[entityContact.contactID].merge(p => ({
+          avatarUrl: avatarUrl,
+        }));
+      }
+    }
+  };
+
   const SetupSocketEvents = () => {
     socket.on('contactData', data => {
-      console.log('contactData: ' + data);
+      HandleContactData(data);
     });
     socket.on('message', data => {
       HandleMessage(data);
@@ -84,7 +118,8 @@ const HomeScreen = ({navigation}) => {
       .then(contacts => {
         let newArr = contacts
           .filter(contact => contact.emailAddresses.length != 0)
-          .map(v => ({
+          .map((v, index) => ({
+            contactID: index,
             recordID: v.recordID,
             emailAddress: v.emailAddresses[0]['email'],
             displayName: v.givenName + ' ' + v.familyName,
