@@ -26,7 +26,6 @@ const ChatTitleBar = ({entityID, chatName, avatarUrl}) => {
 export default ChatTitleBar;
 
 const styles = StyleSheet.create({
-  container: {},
   chatName: {
     fontSize: 18,
   },

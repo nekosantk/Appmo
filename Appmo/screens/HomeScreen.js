@@ -1,4 +1,4 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect} from 'react';
 import {
   StyleSheet,
   Button,
@@ -17,9 +17,10 @@ import Store from '../components/Store';
 import Contacts from 'react-native-contacts';
 import auth from '@react-native-firebase/auth';
 import {REACT_APP_BACKEND_BASEURL, REACT_APP_PROFILE_PICTURE_PATH} from '@env';
+import HomeScreenHeaderPanel from '../components/HomeScreenHeaderPanel';
 
 const HomeScreen = ({navigation}) => {
-  const {chats, contactList} = useState(Store);
+  const {chats, contactList, myProfile} = useState(Store);
 
   const HandleMessage = newMessage => {
     var chatStack = chats.get();
@@ -37,9 +38,7 @@ const HomeScreen = ({navigation}) => {
 
     // Set message variables
     var entityID = newMessage.senderID;
-    var chatName = entityContact
-      ? entityContact.displayName
-      : 'NoName: ' + entityID; // Get from contact list TODO: store contactList in global state
+    var chatName = entityContact ? entityContact.displayName : entityID; // Get from contact list TODO: store contactList in global state
     var avatarUrl =
       'https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg'; // Placeholder until we fetch real profile picture
     var newMessage = {
@@ -65,10 +64,24 @@ const HomeScreen = ({navigation}) => {
       chats[entityStack.chatID].merge(p => ({
         entityID: entityID,
         chatName: p.chatName,
-        avatarUrl: avatarUrl,
+        avatarUrl: p.avatarUrl,
         messages: [...p.messages, newMessage],
       }));
     }
+  };
+
+  const HandleProfileData = data => {
+    var avatarUrl =
+      REACT_APP_BACKEND_BASEURL +
+      REACT_APP_PROFILE_PICTURE_PATH +
+      data.profilePicture;
+
+      var statusMessage = data.statusMessage;
+
+    myProfile.merge(p => ({
+      avatarUrl: avatarUrl,
+      statusMessage: statusMessage,
+    }));
   };
 
   const HandleContactData = data => {
@@ -88,17 +101,30 @@ const HomeScreen = ({navigation}) => {
       });
 
       // Set variables
-      var avatarUrl = REACT_APP_BACKEND_BASEURL + REACT_APP_PROFILE_PICTURE_PATH + data[i].profilePicture;
+      var avatarUrl =
+        REACT_APP_BACKEND_BASEURL +
+        REACT_APP_PROFILE_PICTURE_PATH +
+        data[i].profilePicture;
 
-      if (entityStack !== undefined && entityStack.avatarUrl !== data[i].profilePicture) {
+        var statusMessage = data[i].statusMessage;
+
+      if (
+        entityStack !== undefined &&
+        entityStack.avatarUrl !== data[i].profilePicture
+      ) {
         chats[entityStack.chatID].merge(p => ({
           avatarUrl: avatarUrl,
+          statusMessage: statusMessage,
         }));
       }
 
-      if (entityContact !== undefined && chatStack.avatarUrl !== data[i].profilePicture) {
+      if (
+        entityContact !== undefined &&
+        chatStack.avatarUrl !== data[i].profilePicture
+      ) {
         contactList[entityContact.contactID].merge(p => ({
           avatarUrl: avatarUrl,
+          statusMessage: statusMessage,
         }));
       }
     }
@@ -111,9 +137,12 @@ const HomeScreen = ({navigation}) => {
     socket.on('message', data => {
       HandleMessage(data);
     });
+    socket.on('profileData', data => {
+      HandleProfileData(data);
+    });
   };
 
-  const RefreshContacts = async () => {
+  const RefreshContactList = async () => {
     await Contacts.getAll()
       .then(contacts => {
         let newArr = contacts
@@ -125,15 +154,10 @@ const HomeScreen = ({navigation}) => {
             displayName: v.givenName + ' ' + v.familyName,
             avatarUrl:
               'https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg',
-            statusMessage: 'Test status',
+            statusMessage: '',
           }));
 
         contactList.set(newArr);
-
-        let strippedArr = newArr.map(v => ({
-          emailAddress: v.emailAddress,
-        }));
-        SocketService.Send('getContactInfo', strippedArr);
       })
       .catch(e => {
         console.log(e);
@@ -144,6 +168,28 @@ const HomeScreen = ({navigation}) => {
     });
 
     Contacts.checkPermission();
+  };
+
+  const RefreshData = async () => {
+    let myID = auth().currentUser.email;
+    
+    const profileUpdate = setInterval(function () {
+      SocketService.Send('getProfileInfo', myID);
+    }, 3000);
+
+    const chatUpdate = setInterval(function () {
+      let chatIDs = chats.get().map(v => ({
+        emailAddress: v.entityID,
+      }));
+      SocketService.Send('getContactInfo', chatIDs);
+    }, 3000);
+
+    const contactUpdate = setInterval(function () {
+      let contactListIDs = contactList.get().map(v => ({
+        emailAddress: v.emailAddress,
+      }));
+      SocketService.Send('getContactInfo', contactListIDs);
+    }, 3000);
   };
 
   const ContactsButton = () => {
@@ -164,18 +210,20 @@ const HomeScreen = ({navigation}) => {
               message: 'This app would like to view your contacts.',
             },
           ).then(() => {
-            RefreshContacts();
+            RefreshContactList();
           });
         } else {
-          RefreshContacts();
+          RefreshContactList();
         }
       });
+    RefreshData();
     return () => {
       SocketService.CloseSocket();
     };
   }, []);
   return (
     <SafeAreaView style={styles.Screen}>
+      <HomeScreenHeaderPanel navigation={navigation}/>
       <ScrollView>
         {[...chats.get()]
           .sort((a, b) => {

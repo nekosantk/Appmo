@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {
   StyleSheet,
   Text,
@@ -77,12 +77,10 @@ const ChatScreen = ({route, navigation}) => {
       chats[entityStack.chatID].merge(p => ({
         entityID: entityID,
         chatName: p.chatName,
-        avatarUrl: avatarUrl,
+        avatarUrl: p.avatarUrl,
         messages: [...p.messages, newMessage],
       }));
     }
-
-    SocketService.Send('getContactInfo', [ {emailAddress: entityID} ]);
 
     setInput('');
   };
@@ -114,19 +112,25 @@ const ChatScreen = ({route, navigation}) => {
   if (isNew) {
     return (
       <SafeAreaView style={styles.screen}>
-        <ScrollView>
+        <ScrollView
+          ref={ref => {
+            this.scrollView = ref;
+          }}
+          onContentSizeChange={() =>
+            this.scrollView.scrollToEnd({animated: false})
+          }>
           {chats
             .get()
             .find(obj => {
               return obj.entityID === route.params.entityID;
             })
             .messages.map(({text, senderID, timestamp}) => (
-              <ChatBubble 
-              key={timestamp}
-              text={text}
-              senderID={senderID}
-              timeStamp={timestamp}
-              myID={myID}
+              <ChatBubble
+                key={timestamp}
+                text={text}
+                senderID={senderID}
+                timeStamp={timestamp}
+                myID={myID}
               />
             ))}
         </ScrollView>
@@ -145,7 +149,13 @@ const ChatScreen = ({route, navigation}) => {
   } else {
     return (
       <SafeAreaView style={styles.screen}>
-        <ScrollView></ScrollView>
+        <ScrollView
+          ref={ref => {
+            this.scrollView = ref;
+          }}
+          onContentSizeChange={() =>
+            this.scrollView.scrollToEnd({animated: false})
+          }></ScrollView>
         <View style={styles.bottomBar}>
           <TextInput
             style={styles.input}
@@ -191,5 +201,6 @@ const styles = StyleSheet.create({
   bottomBar: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    paddingTop: 15,
   },
 });

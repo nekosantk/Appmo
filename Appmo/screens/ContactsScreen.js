@@ -16,7 +16,7 @@ import Store from '../components/Store';
 
 const ContactsView = ({navigation}) => {
   const {contactList} = useState(Store);
-
+  
   return (
     <SafeAreaView>
       <ScrollView>

@@ -6,6 +6,7 @@ import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import ContactsScreen from './screens/ContactsScreen';
 import ChatScreen from './screens/ChatScreen';
+import ProfileScreen from './screens/ProfileScreen';
 
 export default App = () => {
   const Stack = createNativeStackNavigator();
@@ -27,37 +28,42 @@ export default App = () => {
   }, []);
 
   return (
-      <NavigationContainer>
-        <Stack.Navigator>
-          {isSignedIn ? (
-            <>
-              <Stack.Screen
-                name="Home"
-                component={HomeScreen}
-                options={HeaderOptions.HomeOptions}
-              />
-              <Stack.Screen
-                name="Contacts"
-                component={ContactsScreen}
-                options={HeaderOptions.ContactsOptions}
-              />
-              <Stack.Screen
-                name="Chat"
-                component={ChatScreen}
-                options={HeaderOptions.ChatScreen}
-              />
-            </>
-          ) : (
-            <>
-              <Stack.Screen
-                name="Login"
-                component={LoginScreen}
-                options={HeaderOptions.LoginOptions}
-              />
-            </>
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
+    <NavigationContainer>
+      <Stack.Navigator>
+        {isSignedIn ? (
+          <>
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={HeaderOptions.HomeOptions}
+            />
+            <Stack.Screen
+              name="Contacts"
+              component={ContactsScreen}
+              options={HeaderOptions.ContactsOptions}
+            />
+            <Stack.Screen
+              name="Chat"
+              component={ChatScreen}
+              options={HeaderOptions.ChatScreen}
+            />
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+              options={HeaderOptions.ProfileScreen}
+            />
+          </>
+        ) : (
+          <>
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={HeaderOptions.LoginOptions}
+            />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 
@@ -73,4 +79,8 @@ const HeaderOptions = {
     headerTitleAlign: 'center',
   },
   ChatScreen: {},
+  ProfileScreen: {
+    title: 'My Profile',
+    headerTitleAlign: 'center',
+  },
 };
