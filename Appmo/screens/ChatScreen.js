@@ -17,9 +17,10 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import SocketService from '../SocketService';
 import auth from '@react-native-firebase/auth';
 import ChatBubble from '../components/ChatBubble';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ChatScreen = ({route, navigation}) => {
-  const {chats, contactList} = useState(Store);
+  const {chats, contactList, myProfile} = useState(Store);
   const [input, setInput] = useStateLocal('');
   const [myID, setMyID] = useStateLocal('');
 
@@ -28,9 +29,12 @@ const ChatScreen = ({route, navigation}) => {
       return;
     }
 
+    var messagesSent = myProfile.get().messagesSent;
+
     var messageObj = {
       destinationID: route.params.entityID,
       text: input,
+      internalID: messagesSent,
     };
     SocketService.Send('message', messageObj);
 
@@ -58,7 +62,17 @@ const ChatScreen = ({route, navigation}) => {
       text: input,
       timestamp: new Date().getTime(),
       senderID: auth().currentUser.email,
+      status: 0,
     };
+
+    newMessage.internalID = messagesSent;
+    messagesSent++;
+
+    myProfile.merge(p => ({
+      avatarUrl: p.avatarUrl,
+      statusMessage: p.statusMessage,
+      messagesSent: messagesSent,
+    }));
 
     // This is a new chat, please create entity
     if (entityStack === undefined) {
@@ -83,6 +97,15 @@ const ChatScreen = ({route, navigation}) => {
     }
 
     setInput('');
+    StoreData("chats", chats.get());
+  };
+
+  const StoreData = async (key, value) => {
+    try {
+      await AsyncStorage.setItem('@' + key, JSON.stringify(value));
+    } catch (e) {
+      console.log("Couldn't save: " + e);
+    }
   };
 
   useEffect(() => {

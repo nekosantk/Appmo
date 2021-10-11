@@ -53,15 +53,11 @@ var connectedClients = new Map();
 
 var connectCounter = 0;
 
+var count = 0;
+
 websocket.on("connection", (socket) => {
   connectCounter++;
   console.log("User connected: " + socket.id + " counter: " + connectCounter);
-
-  var count = 0;
-  const interval = setInterval(function () {
-    fakeMessage(count);
-    count++;
-  }, 3000);
 
   socket.on("auth", (message) => {
     onAuth(socket, message);
@@ -90,7 +86,58 @@ websocket.on("connection", (socket) => {
   socket.on("updateProfilePicture", (messsage) => {
     onUpdateProfilePicture(socket, messsage);
   });
+
+  socket.on("getPendingMessages", () => {
+    onGetPendingMessages(socket);
+  });
+
+  socket.on("getMessageStatusUpdate", () => {
+    onGetMessageStatusUpdate(socket);
+  });
 });
+
+async function onGetMessageStatusUpdate(socket) {
+  const result = await db
+    .collection("Chats")
+    .find({ senderID: socket.email })
+    .toArray();
+  for (let i = 0; i < result.length; i++) {
+    dbMessage = result[i];
+    var messageObj = {
+      senderID: dbMessage.recieverID,
+      status: dbMessage.status,
+      internalID: dbMessage.internalID,
+    };
+    socket.emit("messageStatusUpdate", messageObj);
+  }
+
+  // Delete chats that have been delivered AND we've notified the sender
+  await db
+    .collection("Chats")
+    .deleteMany({ senderID: socket.email, status: 2 })
+}
+
+async function onGetPendingMessages(socket) {
+  // Get all pending message from DB
+  const result = await db
+    .collection("Chats")
+    .find({ recieverID: socket.email })
+    .toArray();
+  for (let i = 0; i < result.length; i++) {
+    dbMessage = result[i];
+    var messageObj = {
+      text: dbMessage.text,
+      timestamp: dbMessage.timestamp,
+      senderID: dbMessage.senderID,
+    };
+    socket.emit("message", messageObj);
+
+    // Set status to delivered (1)
+    await db
+      .collection("Chats")
+      .updateMany({ recieverID: socket.email }, { $set: { status: 1 } });
+  }
+}
 
 async function onUpdateProfilePicture(socket, message) {
   const [deletePicturePromise, updatePicturePromise] = await Promise.all([
@@ -144,7 +191,6 @@ function onAuth(socket, message) {
       var email = decodedToken.email;
       connectedClients.set(email, socket);
       socket.email = email;
-      // TODO: Fetch pending user messages from database and mark as sent
     });
 }
 
@@ -154,7 +200,7 @@ function onDisconnect(socket) {
   console.log("User disconnect: counter: " + connectCounter);
 }
 
-function onMessage(socket, message) {
+async function onMessage(socket, message) {
   var destinationID = message.destinationID;
   var senderID = socket.email;
   var messageObj = {
@@ -169,6 +215,14 @@ function onMessage(socket, message) {
     connectedClients.get(destinationID).emit("message", messageObj);
   } else {
     // Store in DB if offline
+    await db.collection("Chats").insertOne({
+      recieverID: destinationID,
+      senderID: messageObj.senderID,
+      text: messageObj.text,
+      timestamp: messageObj.timestamp,
+      status: 1,
+      internalID: message.internalID,
+    });
   }
 }
 
@@ -180,8 +234,6 @@ async function onUpdateStatusMessage(socket, message) {
 }
 
 async function onGetContactInfo(socket, message) {
-  //console.log("Contact info was requsted: %j", message);
-
   var emails = [];
 
   for (let i = 0; i < message.length; i++) {
