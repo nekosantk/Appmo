@@ -3,6 +3,7 @@
  
  # Stack
  React Native<br>
+ Firebase<br>
  NodeJS w/ Express<br>
  MongoDB<br>
  Socket.io<br>
@@ -20,8 +21,11 @@
  Auto-sorting as new messages are recieved<br>
  Firebase Authentication (Google Signin)<br>
  Firebase Admin SDK (Verifying users with token)<br>
+ All API Keys stored in .env files
  
  # Installation
+ Go to Firebase > New Project > Android Project > 
+ 
  cd Appmo<br>
  yarn install<br>
  npx react-native run-android<br>
