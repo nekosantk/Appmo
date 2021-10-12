@@ -24,10 +24,10 @@
  All API Keys stored in .env files
  
  # Installation
- Go to Firebase > New Project > Android Project > Download google-services.json
- Place google-services.json in Appmo/android/app/
- Go to Google Credentials > Credentials > Service Key > Copy into clipboard
- Rename sample.env file to .env and populate the values in the file
+ Go to Firebase > New Project > Android Project > Download google-services.json<br>
+ Place google-services.json in Appmo/android/app/<br>
+ Go to Google Credentials > Credentials > Service Key > Copy into clipboard<br>
+ Rename sample.env file to .env and populate the values in the file<br>
  
  cd Appmo<br>
  yarn install<br>
